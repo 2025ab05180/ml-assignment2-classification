@@ -20,8 +20,6 @@ wheels/
 *.egg
 .streamlit/
 .DS_Store
-*.pkl
-*.csv
 .venv
 venv/
 ENV/
