@@ -378,8 +378,24 @@ if models_loaded:
         
         if selected_metrics:
             for metric in selected_metrics:
-                fig = px.bar(results_df[[metric]], title=f'{metric} by Model', height=350, color=metric)
-                fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+                # Reset index to use model names as a column for plotting
+                plot_df = results_df[[metric]].reset_index()
+                plot_df.columns = ['Model', metric]
+                
+                fig = px.bar(
+                    plot_df,
+                    x='Model',
+                    y=metric,
+                    title=f'{metric} by Model',
+                    height=350,
+                    color=metric,
+                    labels={metric: metric}
+                )
+                fig.update_layout(
+                    margin=dict(l=0, r=0, t=50, b=0),
+                    xaxis_title="Model",
+                    yaxis_title=metric
+                )
                 fig.update_yaxes(autorange=True)
                 st.plotly_chart(fig, use_container_width=True)
                 
