@@ -311,11 +311,12 @@ if models_loaded:
             for idx, feature in enumerate(feature_names):
                 col = cols[idx % 5]
                 with col:
+                    random_value = round(random.uniform(0, 100), 1)
                     value = st.slider(
                         feature,
                         min_value=0.0,
                         max_value=100.0,
-                        value=50.0,
+                        value=random_value,
                         step=0.1,
                         key=f"slider_{feature}"
                     )
