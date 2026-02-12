@@ -12,21 +12,56 @@ st.set_page_config(
     page_title="ML Classification Models",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+    
+    * {
+        font-family: 'Poppins', 'Inter', sans-serif !important;
+    }
+    
+    h1 {
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 700 !important;
+        color: #2C3E50 !important;
+        letter-spacing: -0.5px !important;
+    }
+    
+    h2, h3 {
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 600 !important;
+        color: #2C3E50 !important;
+    }
+    
+    p {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 400 !important;
+        color: #555555 !important;
+    }
+    
     .stButton > button {
         background-color: rgb(255, 140, 66) !important;
         color: white !important;
-        font-weight: bold !important;
+        font-weight: 600 !important;
+        font-family: 'Poppins', sans-serif !important;
         border: none !important;
         border-radius: 8px !important;
         padding: 12px 24px !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
     }
     .stButton > button:hover {
         background-color: rgb(255, 120, 40) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(255, 140, 66, 0.3) !important;
+    }
+    
+    .metric-value {
+        font-size: 28px !important;
+        font-weight: 700 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -82,22 +117,25 @@ except Exception as e:
     models_loaded = False
 
 if models_loaded:
-    st.sidebar.title("Navigation")
-    st.sidebar.markdown("---")
+    col1, col2, col3, col4 = st.columns(4)
     
-    if st.sidebar.button("Model Performance", use_container_width=True):
-        st.session_state.page = "performance"
+    with col1:
+        if st.button("Model Performance", use_container_width=True):
+            st.session_state.page = "performance"
     
-    if st.sidebar.button("Make Predictions", use_container_width=True):
-        st.session_state.page = "predictions"
+    with col2:
+        if st.button("Make Predictions", use_container_width=True):
+            st.session_state.page = "predictions"
     
-    if st.sidebar.button("Metrics Comparison", use_container_width=True):
-        st.session_state.page = "comparison"
+    with col3:
+        if st.button("Metrics Comparison", use_container_width=True):
+            st.session_state.page = "comparison"
     
-    if st.sidebar.button("About Dataset", use_container_width=True):
-        st.session_state.page = "dataset"
+    with col4:
+        if st.button("About Dataset", use_container_width=True):
+            st.session_state.page = "dataset"
     
-    st.sidebar.markdown("---")
+    st.markdown("---")
     
     if "page" not in st.session_state:
         st.session_state.page = "performance"
