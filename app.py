@@ -256,7 +256,7 @@ if models_loaded:
             selected_models = st.multiselect(
                 "Select models to use:",
                 list(models.keys()),
-                default=list(models.keys())[:3]
+                default=list(models.keys())
             )
             
             if not selected_models:
@@ -299,30 +299,31 @@ if models_loaded:
                     feature_values = []
         
         # Make predictions
-        if st.button("Predict", use_container_width=True) and len(feature_values) == 30:
-            X_input = np.array(feature_values).reshape(1, -1)
-            X_scaled = scaler.transform(X_input)
-            
-            st.markdown("---")
-            st.subheader("Predictions from Selected Models")
-            
-            predictions_list = []
-            for model_name in selected_models:
-                model = models[model_name]
-                pred = model.predict(X_scaled)[0]
-                pred_proba = model.predict_proba(X_scaled)[0]
+        if st.button("Predict", use_container_width=True, key="predict_sliders"):
+            if len(feature_values) == 30:
+                X_input = np.array(feature_values).reshape(1, -1)
+                X_scaled = scaler.transform(X_input)
                 
-                predictions_list.append({
-                    'Model': model_name,
-                    'Prediction': 'Malignant (1)' if pred == 1 else 'Benign (0)',
-                    'Class 0 Probability': f"{pred_proba[0]:.4f}",
-                    'Class 1 Probability': f"{pred_proba[1]:.4f}"
-                })
-            
-            predictions_df = pd.DataFrame(predictions_list)
-            display_styled_dataframe(predictions_df, "Model Predictions")
-        elif st.button("Predict", use_container_width=True):
-            st.error("Please ensure all 30 feature values are provided")
+                st.markdown("---")
+                st.subheader("Predictions from Selected Models")
+                
+                predictions_list = []
+                for model_name in selected_models:
+                    model = models[model_name]
+                    pred = model.predict(X_scaled)[0]
+                    pred_proba = model.predict_proba(X_scaled)[0]
+                    
+                    predictions_list.append({
+                        'Model': model_name,
+                        'Prediction': 'Malignant (1)' if pred == 1 else 'Benign (0)',
+                        'Class 0 Probability': f"{pred_proba[0]:.4f}",
+                        'Class 1 Probability': f"{pred_proba[1]:.4f}"
+                    })
+                
+                predictions_df = pd.DataFrame(predictions_list)
+                display_styled_dataframe(predictions_df, "Model Predictions")
+            else:
+                st.error("Please ensure all 30 feature values are provided")
     
     elif st.session_state.page == "comparison":
         st.header("Detailed Metrics Comparison")
@@ -483,7 +484,7 @@ if models_loaded:
                     fig, ax = plt.subplots(figsize=(8, 6))
                     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Benign', 'Malignant'])
                     disp.plot(ax=ax, cmap='Blues')
-                    plt.title(f"Confusion Matrix - {upload_model}", fontsize=14, fontweight='bold', color='rgb(255, 140, 66)')
+                    plt.title(f"Confusion Matrix - {upload_model}", fontsize=14, fontweight='bold', color='#FF8C42')
                     st.pyplot(fig)
                     
                     st.markdown("---")
