@@ -63,6 +63,51 @@ st.markdown("""
         font-size: 28px !important;
         font-weight: 700 !important;
     }
+    
+    /* Table Styling */
+    [data-testid="stDataframe"] {
+        border-radius: 8px !important;
+        border: 2px solid rgb(255, 140, 66) !important;
+        overflow: hidden !important;
+    }
+    
+    [data-testid="stDataframe"] thead tr {
+        background-color: rgb(255, 140, 66) !important;
+        color: white !important;
+    }
+    
+    [data-testid="stDataframe"] thead th {
+        background-color: rgb(255, 140, 66) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        padding: 12px !important;
+        border: 1px solid rgba(255, 140, 66, 0.8) !important;
+    }
+    
+    [data-testid="stDataframe"] tbody tr {
+        background-color: #FFFEF5 !important;
+    }
+    
+    [data-testid="stDataframe"] tbody tr:nth-child(even) {
+        background-color: #FFE4C4 !important;
+    }
+    
+    [data-testid="stDataframe"] tbody tr:hover {
+        background-color: rgba(255, 140, 66, 0.2) !important;
+    }
+    
+    [data-testid="stDataframe"] tbody td {
+        color: #2C3E50 !important;
+        padding: 10px !important;
+        border: 1px solid rgba(255, 140, 66, 0.3) !important;
+        text-align: center !important;
+        font-weight: 500 !important;
+    }
+    
+    [data-testid="stDataframe"] tbody tr:first-child td {
+        font-weight: 600 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
