@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import os
+import random
 from pathlib import Path
 import plotly.graph_objects as go
 import plotly.express as px
@@ -32,6 +33,8 @@ st.markdown("""
         font-weight: 700 !important;
         color: #2C3E50 !important;
         letter-spacing: -0.5px !important;
+        margin: -20px 0 5px 0 !important;
+        padding: 0 !important;
     }
     
     h2, h3 {
@@ -66,6 +69,15 @@ st.markdown("""
     .metric-value {
         font-size: 28px !important;
         font-weight: 700 !important;
+    }
+    
+    .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        margin-top: 40px;
+        padding: 20px 0;
+        border-top: 1px solid #ddd;
     }
     
     /* Styled Table CSS */
@@ -119,8 +131,11 @@ def display_styled_dataframe(df, title=""):
         st.markdown(f"<h3 style='color: rgb(255, 140, 66);'>{title}</h3>", unsafe_allow_html=True)
     st.markdown(html, unsafe_allow_html=True)
 
-st.title("ML Classification Models - Evaluation Dashboard")
-st.markdown("Professional Machine Learning Classification Pipeline")
+def add_footer():
+    """Add footer with user info to every page"""
+    st.markdown("<div class='footer'>Arthika G | BITS ID: 2025AB05180</div>", unsafe_allow_html=True)
+
+st.markdown("### ML Classification Models - Breast Cancer Dataset")
 
 # Get model directory
 model_dir = Path(__file__).parent / "model"
@@ -201,7 +216,7 @@ if models_loaded:
         st.header("Model Performance Metrics")
         st.markdown("---")
         
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([2, 1])
         
         with col1:
             st.subheader("Metrics Table")
@@ -209,33 +224,55 @@ if models_loaded:
         
         with col2:
             st.subheader("Best Models by Metric")
-            for metric in results_df.columns:
-                best_model = results_df[metric].idxmax()
-                best_score = results_df[metric].max()
-                st.metric(metric, f"{best_score:.4f}", f"({best_model})")
+            metrics_list = results_df.columns.tolist()
+            for i in range(0, len(metrics_list), 2):
+                metric_cols = st.columns(2)
+                for j, col in enumerate(metric_cols):
+                    if i+j < len(metrics_list):
+                        metric = metrics_list[i+j]
+                        with col:
+                            best_model = results_df[metric].idxmax()
+                            best_score = results_df[metric].max()
+                            st.metric(metric[:8], f"{best_score:.4f}")
         
         st.markdown("---")
         st.subheader("Metric Visualizations")
         
-        # Line chart
-        st.line_chart(results_df)
+        # Line chart with responsive sizing
+        fig = go.Figure()
+        for model in results_df.index:
+            fig.add_trace(go.Scatter(x=results_df.columns, y=results_df.loc[model], mode='lines+markers', name=model))
+        fig.update_layout(height=400, hovermode='x unified', margin=dict(l=0, r=0, t=0, b=0))
+        fig.update_xaxes(autorange=True)
+        fig.update_yaxes(autorange=True)
+        st.plotly_chart(fig, use_container_width=True)
         
-        # Bar chart for each metric
+        # Bar charts in 2x2 grid
         col1, col2 = st.columns(2)
         
         with col1:
-            st.bar_chart(results_df['Accuracy'])
-            st.caption("Accuracy by Model")
+            fig1 = px.bar(results_df, y='Accuracy', title='Accuracy by Model', height=350)
+            fig1.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig1.update_yaxes(autorange=True)
+            st.plotly_chart(fig1, use_container_width=True)
             
-            st.bar_chart(results_df['F1 Score'])
-            st.caption("F1 Score by Model")
+            fig3 = px.bar(results_df, y='F1 Score', title='F1 Score by Model', height=350)
+            fig3.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig3.update_yaxes(autorange=True)
+            st.plotly_chart(fig3, use_container_width=True)
         
         with col2:
-            st.bar_chart(results_df['AUC Score'])
-            st.caption("AUC Score by Model")
+            fig2 = px.bar(results_df, y='AUC Score', title='AUC Score by Model', height=350)
+            fig2.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig2.update_yaxes(autorange=True)
+            st.plotly_chart(fig2, use_container_width=True)
             
-            st.bar_chart(results_df['MCC Score'])
-            st.caption("MCC Score by Model")
+            fig4 = px.bar(results_df, y='MCC Score', title='MCC Score by Model', height=350)
+            fig4.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+            fig4.update_yaxes(autorange=True)
+            st.plotly_chart(fig4, use_container_width=True)
+        
+        add_footer()
     
     elif st.session_state.page == "predictions":
         st.header("Make Predictions with Trained Models")
@@ -324,34 +361,42 @@ if models_loaded:
                 display_styled_dataframe(predictions_df, "Model Predictions")
             else:
                 st.error("Please ensure all 30 feature values are provided")
+        
+        add_footer()
     
     elif st.session_state.page == "comparison":
         st.header("Detailed Metrics Comparison")
         st.markdown("---")
         
-        # Selectbox for metric
-        selected_metric = st.selectbox("Select Metric:", results_df.columns)
+        # Multiselect for metrics - all by default
+        selected_metrics = st.multiselect(
+            "Select Metrics:",
+            results_df.columns.tolist(),
+            default=results_df.columns.tolist()
+        )
         
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.bar_chart(results_df[selected_metric].sort_values(ascending=False))
-        
-        with col2:
-            st.metric(f"Best {selected_metric}", 
-                     f"{results_df[selected_metric].max():.4f}",
-                     f"{results_df[selected_metric].idxmax()}")
+        if selected_metrics:
+            col1, col2 = st.columns([2, 1])
             
-            st.metric(f"Worst {selected_metric}", 
-                     f"{results_df[selected_metric].min():.4f}",
-                     f"{results_df[selected_metric].idxmin()}")
+            with col1:
+                fig = px.bar(results_df[selected_metrics], title='Selected Metrics Comparison', height=450)
+                fig.update_layout(margin=dict(l=0, r=0, t=30, b=0))
+                fig.update_yaxes(autorange=True)
+                st.plotly_chart(fig, use_container_width=True)
             
-            st.metric(f"Average {selected_metric}", 
-                     f"{results_df[selected_metric].mean():.4f}")
+            with col2:
+                for metric in selected_metrics:
+                    st.metric(f"Best {metric[:12]}", 
+                             f"{results_df[metric].max():.4f}",
+                             f"{results_df[metric].idxmax()}")
+                    st.metric(f"Avg {metric[:12]}", 
+                             f"{results_df[metric].mean():.4f}")
+            
+            st.markdown("---")
+            st.subheader("All Models - Selected Metrics")
+            display_styled_dataframe(results_df[selected_metrics].round(4))
         
-        st.markdown("---")
-        st.subheader(f"All Models - {selected_metric}")
-        display_styled_dataframe(results_df[[selected_metric]].round(4))
+        add_footer()
     
     elif st.session_state.page == "upload":
         st.header("Upload & Test Dataset")
@@ -399,15 +444,33 @@ if models_loaded:
         st.markdown("---")
         st.subheader("Step 3: Upload Your Dataset")
         
+        # Initialize session state for default upload
+        if "default_uploaded" not in st.session_state:
+            st.session_state.default_uploaded = True
+            st.session_state.default_df = sample_test_df
+            st.session_state.default_model = random.choice(list(models.keys())) if models else None
+        
         uploaded_file = st.file_uploader(
             "Upload CSV file (first 30 columns should be features):",
             type=['csv'],
             help="CSV file with features. Optional: include 'Target' column for evaluation"
         )
         
+        # Priority: uploaded file > default
+        processing_df = None
+        processing_model = None
+        
         if uploaded_file is not None:
+            processing_df = pd.read_csv(uploaded_file)
+            processing_model = upload_model
+        elif st.session_state.default_uploaded:
+            processing_df = st.session_state.default_df
+            processing_model = st.session_state.default_model
+            st.info(f"📊 Using default sample data with **{processing_model}** model (upload your own file to replace)")
+        
+        if processing_df is not None and processing_model is not None:
             try:
-                uploaded_df = pd.read_csv(uploaded_file)
+                uploaded_df = processing_df
                 
                 st.markdown("---")
                 st.subheader("Data Preview")
@@ -431,7 +494,7 @@ if models_loaded:
                 
                 # Make predictions
                 X_scaled_upload = scaler.transform(X_upload)
-                selected_model = models[upload_model]
+                selected_model = models[processing_model]
                 predictions = selected_model.predict(X_scaled_upload)
                 pred_proba = selected_model.predict_proba(X_scaled_upload)
                 
@@ -481,14 +544,14 @@ if models_loaded:
                     display_styled_dataframe(cm_df, "Confusion Matrix")
                     
                     # Confusion matrix visualization
-                    fig, ax = plt.subplots(figsize=(8, 6))
+                    fig, ax = plt.subplots(figsize=(6, 4.5))
                     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Benign', 'Malignant'])
                     disp.plot(ax=ax, cmap='Blues')
-                    plt.title(f"Confusion Matrix - {upload_model}", fontsize=14, fontweight='bold', color='#FF8C42')
+                    plt.title(f"Confusion Matrix - {processing_model}", fontsize=12, fontweight='bold', color='#FF8C42')
+                    plt.tight_layout()
                     st.pyplot(fig)
                     
                     st.markdown("---")
-                    st.subheader("Classification Report")
                     
                     report = classification_report(y_upload, predictions, target_names=['Benign', 'Malignant'], output_dict=True)
                     report_df = pd.DataFrame(report).transpose()
@@ -500,13 +563,15 @@ if models_loaded:
                 st.download_button(
                     label="📥 Download Predictions (CSV)",
                     data=csv_predictions,
-                    file_name=f"predictions_{upload_model.replace(' ', '_')}.csv",
+                    file_name=f"predictions_{processing_model.replace(' ', '_')}.csv",
                     mime="text/csv",
                     use_container_width=True
                 )
                 
             except Exception as e:
                 st.error(f"Error processing file: {str(e)}")
+        
+        add_footer()
     
     elif st.session_state.page == "dataset":
         st.header("About the Dataset")
@@ -519,7 +584,9 @@ if models_loaded:
             st.markdown("""
             **Dataset Name:** Breast Cancer Wisconsin (Diagnostic)
             
-            **Source:** UCI Machine Learning Repository
+            **Source:** [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/17/breast+cancer+wisconsin+diagnostic)
+            
+            **Original Paper:** [Wolberg et al., 1995](https://pubmed.ncbi.nlm.nih.gov/9144026/)
             
             **Number of Instances:** 569
             
@@ -566,6 +633,9 @@ if models_loaded:
         The dataset is well-balanced and suitable for demonstrating
         various ML classification techniques.
         """)
+        
+        add_footer()
 
 else:
     st.error("Models not loaded. Please ensure the model files are trained and saved.")
+    add_footer()
